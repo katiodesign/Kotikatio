@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  katio-saas:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: katio-design-saas
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    volumes:
+      - ./data:/app/data
+    environment:
+      - PORT=80
+      - DATABASE_PATH=/app/data/katio.db

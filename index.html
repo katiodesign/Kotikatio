@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Katio Design · Sistema Integral de Cotizaciones y Facturación</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<div class="saas-container">
+  <!-- MENÚ LATERAL (SIDEBAR LAYOUT) -->
+  <aside class="saas-sidebar" id="saasSidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-brand">
+        <span>ΚΛΤΙO</span>
+        <span style="font-size:12px; font-weight:700; color:var(--ink); background:var(--highlight); padding:2px 6px; border-radius:4px;">SAAS</span>
+      </div>
+      <div class="sidebar-sub">Design & Billing Suite</div>
+    </div>
+
+    <!-- Perfil de Usuario y Rol -->
+    <div class="sidebar-user" id="sidebarUserBox">
+      <div class="user-name" id="userNameDisplay">Usuario</div>
+      <div class="user-email" id="userEmailDisplay">cargando...</div>
+      <span class="role-badge admin" id="userRoleBadge">Admin</span>
+    </div>
+
+    <!-- Enlaces de Navegación -->
+    <nav class="sidebar-nav">
+      <div class="nav-section-title">Operaciones</div>
+      <a class="nav-item active" data-view="viewDashboard">
+        <span class="nav-icon">📊</span>
+        <span>Dashboard / Tarifa</span>
+      </a>
+      <a class="nav-item" data-view="viewCatalog">
+        <span class="nav-icon">📁</span>
+        <span>Catálogo & Categorías</span>
+      </a>
+      <a class="nav-item" data-view="viewQuotes">
+        <span class="nav-icon">📄</span>
+        <span>Cotizaciones</span>
+      </a>
+      <a class="nav-item" data-view="viewInvoice">
+        <span class="nav-icon">🧾</span>
+        <span>Facturación / Cobro</span>
+      </a>
+
+      <div class="nav-section-title" id="adminSectionTitle" style="display:none;">Administración</div>
+      <a class="nav-item" data-view="viewUsers" id="navItemUsers" style="display:none;">
+        <span class="nav-icon">👥</span>
+        <span>Gestión de Usuarios</span>
+      </a>
+    </nav>
+
+    <!-- Footer del Sidebar -->
+    <div class="sidebar-footer">
+      <div class="theme-switch-wrapper">
+        <span>🌙 Modo Oscuro</span>
+        <label class="theme-switch" for="darkSwitch">
+          <input type="checkbox" id="darkSwitch">
+          <span class="slider"></span>
+        </label>
+      </div>
+      <div style="display:flex; gap:8px;">
+        <button class="btn danger" id="resetAllDataBtn" style="font-size:11px; padding:6px 10px; flex:1;" title="Restablecer base de datos limpia">Limpiar Datos</button>
+        <button class="btn" id="logoutBtn" style="font-size:11px; padding:6px 10px; background:var(--soft);" title="Cerrar Sesión">Salir</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- CONTENIDO PRINCIPAL -->
+  <main class="saas-main">
+    <div class="top-bar-mobile">
+      <div style="font-weight:800; color:var(--accent);">ΚΛΤΙO DESIGN</div>
+      <button class="btn" id="sidebarMobileToggle" style="padding:6px 10px;">☰ Menú</button>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- VISTA 1: DASHBOARD / TARIFA & SMTP -->
+    <!-- ========================================== -->
+    <div id="viewDashboard" class="saas-view">
+      <div class="card-header">
+        <div>
+          <h2>01 / Dashboard Financiero & Configuración</h2>
+          <p class="sub">Define tus finanzas mensuales, parámetros de tarifa por hora y configuración del servidor de correo.</p>
+        </div>
+        <button class="btn primary" id="saveSettingsBtn">💾 Guardar Configuración</button>
+      </div>
+
+      <div class="cascade">
+        <!-- Calculadora de Tarifa -->
+        <section class="card">
+          <h2>Tarifa Base por Hora</h2>
+          <div class="fields" style="margin-top:16px;">
+            <div class="field">
+              <label for="income">Ingreso deseado mensual (COP)</label>
+              <input id="income" type="number" min="0" step="50000" value="3000000">
+            </div>
+            <div class="field">
+              <label for="expenses">Gastos mensuales de operación (COP)</label>
+              <input id="expenses" type="number" min="0" step="50000" value="500000">
+            </div>
+            <div class="field">
+              <label for="reserve">Fondo de reserva / utilidad (%)</label>
+              <input id="reserve" type="number" min="0" max="100" step="1" value="10">
+            </div>
+            <div class="field">
+              <label for="hours">Horas facturables reales / mes</label>
+              <input id="hours" type="number" min="1" step="1" value="80">
+            </div>
+          </div>
+          <div class="results">
+            <div class="metric">
+              <small>Meta mensual total</small>
+              <strong id="monthlyTarget">$0</strong>
+            </div>
+            <div class="metric primary">
+              <small>Tarifa por hora calculada</small>
+              <strong id="hourlyRate">$0</strong>
+            </div>
+          </div>
+        </section>
+
+        <!-- Datos Fiscales del Emisor -->
+        <section class="card">
+          <h2>Información Fiscal del Emisor (Katio Design)</h2>
+          <p class="sub">Datos predeterminados para las cabeceras de cotizaciones y facturas comerciales.</p>
+          <div class="fields" style="margin-top:16px;">
+            <div class="field">
+              <label>Titular Emisor</label>
+              <input id="emisorNameDisplay" type="text" readonly style="background:var(--soft);">
+            </div>
+            <div class="field">
+              <label>NIT / Cédula</label>
+              <input id="emisorNitDisplay" type="text" readonly style="background:var(--soft);">
+            </div>
+            <div class="field">
+              <label>Régimen Tributario</label>
+              <input id="emisorRegimenDisplay" type="text" readonly style="background:var(--soft);">
+            </div>
+            <div class="field">
+              <label>Ciudad</label>
+              <input id="emisorCityDisplay" type="text" readonly style="background:var(--soft);">
+            </div>
+            <div class="field">
+              <label>Teléfono</label>
+              <input id="emisorPhoneDisplay" type="text" readonly style="background:var(--soft);">
+            </div>
+            <div class="field">
+              <label>Correo de Contacto</label>
+              <input id="emisorEmailDisplay" type="text" readonly style="background:var(--soft);">
+            </div>
+          </div>
+        </section>
+
+        <!-- Configuración de Servidor de Correo SMTP (Admin) -->
+        <section class="card" id="adminSettingsSection" style="display:none;">
+          <div class="card-header">
+            <div>
+              <h2>Configuración de Servidor SMTP (Envío de Correos)</h2>
+              <p class="sub">Configura tu servidor de correo para enviar invitaciones y credenciales a los nuevos usuarios automáticamente.</p>
+            </div>
+            <button class="btn secondary" id="testSmtpBtn">🔌 Probar Conexión SMTP</button>
+          </div>
+          <div class="fields">
+            <div class="field">
+              <label for="smtpHost">Servidor SMTP (Host)</label>
+              <input id="smtpHost" type="text" placeholder="Ej: smtp.gmail.com o mail.tudominio.com">
+            </div>
+            <div class="field">
+              <label for="smtpPort">Puerto</label>
+              <input id="smtpPort" type="number" value="587">
+            </div>
+            <div class="field">
+              <label for="smtpUser">Usuario / Correo SMTP</label>
+              <input id="smtpUser" type="text" placeholder="usuario@tudominio.com">
+            </div>
+            <div class="field">
+              <label for="smtpPass">Contraseña de Aplicación / Token</label>
+              <input id="smtpPass" type="password" placeholder="••••••••••••">
+            </div>
+            <div class="field">
+              <label for="smtpFrom">Remitente (From)</label>
+              <input id="smtpFrom" type="text" placeholder="Katio Design <notificaciones@tudominio.com>">
+            </div>
+            <div class="field" style="display:flex; align-items:center; gap:8px; margin-top:20px;">
+              <input type="checkbox" id="smtpSecure" style="width:18px; height:18px;">
+              <label for="smtpSecure" style="margin:0; cursor:pointer;">Usar SSL/TLS (Puerto 465)</label>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- VISTA 2: CATÁLOGO & CATEGORÍAS -->
+    <!-- ========================================== -->
+    <div id="viewCatalog" class="saas-view" style="display:none;">
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h2>02 / Catálogo de Servicios & Categorías</h2>
+            <p class="sub">Tus servicios y tarifas almacenados en la base de datos SQLite. Arrastra las filas para reordenar.</p>
+          </div>
+          <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+            <input type="file" id="importCatalogCsvInput" accept=".csv" style="display:none;">
+            <button class="btn secondary" id="importCatalogCsvBtn">↑ Importar CSV</button>
+            <button class="btn secondary" id="exportCatalogCsvBtn">↓ Exportar CSV</button>
+            <button class="btn" id="openAddCategoryModalBtn" style="border:1px solid var(--line);">+ Nueva Categoría</button>
+            <button class="btn primary" id="addCatalogServiceBtn">+ Nuevo Servicio</button>
+          </div>
+        </div>
+
+        <!-- Buscador y Filtro -->
+        <div style="display:flex; gap:14px; margin-bottom:18px; flex-wrap:wrap;">
+          <div style="flex:2; min-width:240px;">
+            <input id="catalogSearchInput" type="text" placeholder="🔍 Buscar por palabra clave (servicio, descripción, categoría)..." style="width:100%; border:1px solid var(--line); border-radius:8px; padding:10px 14px; background:var(--soft); color:var(--ink); font:inherit;">
+          </div>
+          <div style="flex:1; min-width:180px;">
+            <select id="catalogCategoryFilter" style="width:100%; border:1px solid var(--line); border-radius:8px; padding:10px 12px; background:var(--soft); color:var(--ink); font:inherit;">
+              <option value="ALL">Todas las Categorías</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th width="5%">N°</th>
+                <th width="15%">CATEGORÍA</th>
+                <th width="35%">SERVICIO & DESCRIPCIÓN</th>
+                <th width="12%" style="text-align:center;">HORAS</th>
+                <th width="13%">VALOR HORA</th>
+                <th width="14%">PRECIO</th>
+                <th width="6%"></th>
+              </tr>
+            </thead>
+            <tbody id="catalogRows"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- VISTA 3: COTIZACIONES / OFERTA MERCANTIL -->
+    <!-- ========================================== -->
+    <div id="viewQuotes" class="saas-view" style="display:none;">
+      <div class="card">
+        <!-- Navegación por pestañas (Editor vs Historial) -->
+        <div class="card-header">
+          <div>
+            <h2>03 / Cotizador · Ofertas Mercantiles</h2>
+            <p class="sub">Guarda cotizaciones en la base de datos, consúltalas por consecutivo y expórtalas a PDF oficial.</p>
+          </div>
+          <div style="display:flex; gap:8px;">
+            <button class="btn primary" id="quoteTabEditorBtn">📝 Editor / Nueva</button>
+            <button class="btn" id="quoteTabHistoryBtn">📋 Historial & Buscar</button>
+          </div>
+        </div>
+
+        <!-- SECCIÓN 1: HISTORIAL Y CONSULTA POR CONSECUTIVO -->
+        <div id="quoteHistorySection" style="display:none;">
+          <div style="margin-bottom:16px;">
+            <input id="quoteSearchInput" type="text" placeholder="🔍 Buscar por consecutivo (ej: COT-00001) o cliente..." style="width:100%; border:1px solid var(--line); border-radius:8px; padding:10px 14px; background:var(--soft); color:var(--ink); font:inherit;">
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th width="5%">N°</th>
+                  <th width="15%">CONSECUTIVO</th>
+                  <th width="25%">CLIENTE</th>
+                  <th width="15%">FECHA</th>
+                  <th width="15%">TOTAL</th>
+                  <th width="10%">ESTADO</th>
+                  <th width="15%" style="text-align:right;">ACCIONES</th>
+                </tr>
+              </thead>
+              <tbody id="quotesHistoryTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- SECCIÓN 2: FORMULARIO EDITOR DE COTIZACIÓN -->
+        <div id="quoteEditorSection">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:10px;">
+            <div style="display:flex; gap:10px; align-items:center;">
+              <span style="font-weight:700; color:var(--muted); font-size:12px;">CONSECUTIVO:</span>
+              <input id="quoteNumber" type="text" style="font-weight:bold; letter-spacing:1px; width:130px; padding:6px 10px; border:1px solid var(--line); border-radius:6px; background:var(--card);">
+              <button class="btn" id="newQuoteCleanBtn" style="font-size:12px;">+ Nueva Cotización Limpia</button>
+            </div>
+            <div style="display:flex; gap:10px;">
+              <button class="btn primary" id="saveQuoteBtn">💾 Guardar en Base de Datos</button>
+              <button class="btn dark" id="printQuoteBtn">🖨️ Imprimir / Exportar PDF</button>
+              <button class="btn secondary" id="exportQuoteCsvBtn">↓ CSV</button>
+            </div>
+          </div>
+
+          <div class="fields" style="background:var(--soft); padding:18px; border-radius:10px; margin-bottom:18px; border:1px solid var(--line);">
+            <div class="field">
+              <label for="quoteDocType">Denominación</label>
+              <select id="quoteDocType">
+                <option value="Cotización">Cotización Formal</option>
+                <option value="Oferta Mercantil">Oferta Mercantil</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="quoteDate">Fecha de Emisión</label>
+              <input id="quoteDate" type="date">
+            </div>
+            <div class="field">
+              <label for="quoteClient">Cliente o Razón Social *</label>
+              <input id="quoteClient" type="text" placeholder="Ej: Empresa X / Mauricio">
+            </div>
+            <div class="field">
+              <label for="quoteClientNit">NIT o Cédula Cliente</label>
+              <input id="quoteClientNit" type="text" placeholder="Ej: 901.234.567-1">
+            </div>
+            <div class="field">
+              <label for="quoteClientPhone">Teléfono</label>
+              <input id="quoteClientPhone" type="text" placeholder="Ej: 300 123 4567">
+            </div>
+            <div class="field">
+              <label for="quoteClientEmail">Correo Electrónico</label>
+              <input id="quoteClientEmail" type="email" placeholder="cliente@correo.com">
+            </div>
+            <div class="field">
+              <label for="quoteClientAddress">Dirección y Ciudad</label>
+              <input id="quoteClientAddress" type="text" placeholder="Ej: Calle 10 # 5-20, Montería">
+            </div>
+            <div class="field">
+              <label for="quoteComplexity" title="Cálculo interno técnico">Complejidad Técnica (Interna)</label>
+              <select id="quoteComplexity">
+                <option value="0">0% (Estándar · ×1.0)</option>
+                <option value="10">10% (Media · ×1.10)</option>
+                <option value="20">20% (Alta · ×1.20)</option>
+              </select>
+              <small style="font-size:10px; color:var(--muted); display:block; margin-top:2px;">* Nunca visible en el PDF al cliente</small>
+            </div>
+            <div class="field" style="display:flex; flex-direction:column; justify-content:center;">
+              <label>Régimen de IVA</label>
+              <label class="iva-toggle-box">
+                <input type="checkbox" id="quoteApplyIva">
+                <span style="font-size:12px; font-weight:600;">Aplicar IVA (19%)</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Controles de Ítems -->
+          <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:14px; flex-wrap:wrap;">
+            <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+              <button class="btn primary" id="addEmptyQuoteItemBtn">+ Añadir Ítem Personalizado</button>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <select id="catalogSelectImport" style="border:1px solid var(--line); border-radius:8px; padding:9px 12px; font:inherit; background:var(--soft); color:var(--ink);">
+                  <option value="">Importar desde Catálogo</option>
+                </select>
+                <button class="btn" id="importFromCatalogBtn">Importar</button>
+              </div>
+            </div>
+            <div>
+              <button class="btn secondary" id="openDiscountModalBtn" style="background:var(--highlight); color:#2d3b0e; font-weight:700;">% Agregar Descuento</button>
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th width="4%">N°</th>
+                  <th width="45%">CONCEPTO / SERVICIO & DESCRIPCIÓN</th>
+                  <th width="12%" style="text-align:center;">CANTIDAD</th>
+                  <th width="18%">VALOR UNIT. (COP)</th>
+                  <th width="15%">TOTAL</th>
+                  <th width="6%"></th>
+                </tr>
+              </thead>
+              <tbody id="quoteItemRows"></tbody>
+            </table>
+          </div>
+
+          <div class="results" style="margin-top:20px;">
+            <div class="metric"><small>Total Ítems</small><strong id="quoteTotalItemsCount">0</strong></div>
+            <div class="metric"><small>Subtotal Ítems</small><strong id="quoteSubtotal">$0</strong></div>
+            <div class="metric"><small id="quoteIvaLabel">IVA (0% No responsable)</small><strong id="quoteIvaDisplay">$0</strong></div>
+            <div class="metric primary"><small>TOTAL COTIZACIÓN</small><strong id="quoteGrandTotal">$0</strong></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- VISTA 4: FACTURACIÓN / CUENTAS DE COBRO -->
+    <!-- ========================================== -->
+    <div id="viewInvoice" class="saas-view" style="display:none;">
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h2>04 / Facturación Comercial · Cuenta de Cobro</h2>
+            <p class="sub">Guarda documentos de cobro en SQLite, consúltalos por consecutivo y expórtalos a PDF oficial.</p>
+          </div>
+          <div style="display:flex; gap:8px;">
+            <button class="btn primary" id="invoiceTabEditorBtn">📝 Editor / Nueva</button>
+            <button class="btn" id="invoiceTabHistoryBtn">📋 Historial & Buscar</button>
+          </div>
+        </div>
+
+        <!-- SECCIÓN 1: HISTORIAL Y CONSULTA DE FACTURAS -->
+        <div id="invoiceHistorySection" style="display:none;">
+          <div style="margin-bottom:16px;">
+            <input id="invoiceSearchInput" type="text" placeholder="🔍 Buscar por consecutivo (ej: FACT-00001) o cliente..." style="width:100%; border:1px solid var(--line); border-radius:8px; padding:10px 14px; background:var(--soft); color:var(--ink); font:inherit;">
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th width="5%">N°</th>
+                  <th width="15%">CONSECUTIVO</th>
+                  <th width="15%">TIPO</th>
+                  <th width="20%">CLIENTE</th>
+                  <th width="12%">EMISIÓN</th>
+                  <th width="12%">VENCE</th>
+                  <th width="12%">TOTAL</th>
+                  <th width="9%">ESTADO</th>
+                  <th width="15%" style="text-align:right;">ACCIONES</th>
+                </tr>
+              </thead>
+              <tbody id="invoicesHistoryTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- SECCIÓN 2: FORMULARIO EDITOR DE FACTURACIÓN -->
+        <div id="invoiceEditorSection">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:10px;">
+            <div style="display:flex; gap:10px; align-items:center;">
+              <span style="font-weight:700; color:var(--muted); font-size:12px;">CONSECUTIVO:</span>
+              <input id="invoiceNumber" type="text" style="font-weight:bold; letter-spacing:1px; width:130px; padding:6px 10px; border:1px solid var(--line); border-radius:6px; background:var(--card);">
+              <button class="btn" id="newInvoiceCleanBtn" style="font-size:12px;">+ Nueva Factura Limpia</button>
+            </div>
+            <div style="display:flex; gap:10px;">
+              <button class="btn primary" id="saveInvoiceBtn">💾 Guardar en Base de Datos</button>
+              <button class="btn dark" id="printInvoiceBtn">🖨️ Imprimir / Exportar PDF</button>
+              <button class="btn secondary" id="exportInvoiceCsvBtn">↓ CSV</button>
+            </div>
+          </div>
+
+          <div class="fields" style="background:var(--soft); padding:18px; border-radius:10px; margin-bottom:18px; border:1px solid var(--line);">
+            <div class="field">
+              <label for="invoiceDocType">Denominación</label>
+              <select id="invoiceDocType">
+                <option value="Cuenta de Cobro">Cuenta de Cobro</option>
+                <option value="Factura Comercial">Factura Comercial</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="invoiceDate">Fecha de Emisión</label>
+              <input id="invoiceDate" type="date">
+            </div>
+            <div class="field">
+              <label for="invoiceDueDate">Fecha de Vencimiento / Plazo</label>
+              <input id="invoiceDueDate" type="date">
+            </div>
+            <div class="field">
+              <label for="invoiceClient">Cliente o Razón Social *</label>
+              <input id="invoiceClient" type="text" placeholder="Ej: Empresa X / Mauricio">
+            </div>
+            <div class="field">
+              <label for="invoiceClientNit">NIT o Cédula Cliente</label>
+              <input id="invoiceClientNit" type="text" placeholder="Ej: 901.234.567-1">
+            </div>
+            <div class="field">
+              <label for="invoiceClientPhone">Teléfono</label>
+              <input id="invoiceClientPhone" type="text" placeholder="Ej: 300 123 4567">
+            </div>
+            <div class="field">
+              <label for="invoiceClientEmail">Correo Electrónico</label>
+              <input id="invoiceClientEmail" type="email" placeholder="cliente@correo.com">
+            </div>
+            <div class="field">
+              <label for="invoiceClientAddress">Dirección y Ciudad</label>
+              <input id="invoiceClientAddress" type="text" placeholder="Ej: Calle 10 # 5-20, Montería">
+            </div>
+            <div class="field">
+              <label for="invoiceComplexity" title="Cálculo interno técnico">Complejidad Técnica (Interna)</label>
+              <select id="invoiceComplexity">
+                <option value="0">0% (Estándar · ×1.0)</option>
+                <option value="10">10% (Media · ×1.10)</option>
+                <option value="20">20% (Alta · ×1.20)</option>
+              </select>
+              <small style="font-size:10px; color:var(--muted); display:block; margin-top:2px;">* Nunca visible en el PDF al cliente</small>
+            </div>
+            <div class="field" style="display:flex; flex-direction:column; justify-content:center;">
+              <label>Régimen de IVA</label>
+              <label class="iva-toggle-box">
+                <input type="checkbox" id="invoiceApplyIva">
+                <span style="font-size:12px; font-weight:600;">Aplicar IVA (19%)</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Controles de Ítems Factura -->
+          <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:14px; flex-wrap:wrap;">
+            <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+              <button class="btn primary" id="addInvoiceItemBtn">+ Añadir Servicio</button>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <select id="invoiceCatalogSelectImport" style="border:1px solid var(--line); border-radius:8px; padding:9px 12px; font:inherit; background:var(--soft); color:var(--ink);">
+                  <option value="">Importar desde Catálogo</option>
+                </select>
+                <button class="btn" id="invoiceImportFromCatalogBtn">Importar</button>
+              </div>
+            </div>
+            <div>
+              <button class="btn secondary" id="openInvoiceDiscountModalBtn" style="background:var(--highlight); color:#2d3b0e; font-weight:700;">% Agregar Descuento</button>
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th width="4%">N°</th>
+                  <th width="45%">CONCEPTO / SERVICIO & ALCANCE</th>
+                  <th width="12%" style="text-align:center;">CANTIDAD</th>
+                  <th width="18%">VALOR UNIT. (COP)</th>
+                  <th width="15%">TOTAL</th>
+                  <th width="6%"></th>
+                </tr>
+              </thead>
+              <tbody id="invoiceItemRows"></tbody>
+            </table>
+          </div>
+
+          <div class="results" style="margin-top:20px;">
+            <div class="metric"><small>Total Entregables</small><strong id="invoiceTotalItemsCount">0</strong></div>
+            <div class="metric"><small>Subtotal</small><strong id="invoiceSubtotal">$0</strong></div>
+            <div class="metric"><small id="invoiceIvaLabel">IVA (0% No responsable)</small><strong id="invoiceIvaDisplay">$0</strong></div>
+            <div class="metric primary"><small>TOTAL A PAGAR</small><strong id="invoiceGrandTotal">$0</strong></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- VISTA 5: GESTIÓN DE USUARIOS (ADMIN ONLY) -->
+    <!-- ========================================== -->
+    <div id="viewUsers" class="saas-view" style="display:none;">
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h2>05 / Gestión de Usuarios & Roles (RBAC)</h2>
+            <p class="sub">Crea usuarios y envía credenciales por correo electrónico de manera automática.</p>
+          </div>
+          <div>
+            <button class="btn primary" id="openAddUserModalBtn">+ Crear Nuevo Usuario</button>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th width="5%">N°</th>
+                <th width="30%">NOMBRE COMPLETO</th>
+                <th width="30%">CORREO ELECTRÓNICO</th>
+                <th width="15%">ROL</th>
+                <th width="12%">REGISTRO</th>
+                <th width="8%"></th>
+              </tr>
+            </thead>
+            <tbody id="usersTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ========================================== -->
+<!-- MODALES Y POPUPS -->
+<!-- ========================================== -->
+
+<!-- MODAL DE AUTENTICACIÓN (LOGIN & SETUP INICIAL) -->
+<div id="authModalOverlay" class="modal-overlay" style="display:none;">
+  <div class="modal-box" style="max-width:440px;">
+    <div style="text-align:center; margin-bottom:18px;">
+      <div style="font-size:24px; font-weight:800; color:var(--accent); letter-spacing:1px;">ΚΛΤΙO DESIGN</div>
+      <p id="authModalTitle" style="font-size:15px; font-weight:700; margin:6px 0 2px; color:var(--ink);">Acceso al Sistema</p>
+      <small id="authModalSub" style="color:var(--muted);">Ingresa tus credenciales profesionales</small>
+    </div>
+
+    <!-- Formulario de Setup Inicial (Solo cuando no hay ningún usuario registrado) -->
+    <div id="setupFormBox" style="display:none;">
+      <div style="background:var(--warn); border:1px solid #f2e4b6; border-radius:8px; padding:12px; margin-bottom:16px; font-size:12px; color:#856a20;">
+        <strong>¡Bienvenido!</strong> No hay usuarios registrados aún. Crea tu cuenta de <strong>Administrador Principal</strong> para inicializar el sistema.
+      </div>
+      <div class="field">
+        <label for="setupName">Nombre Completo *</label>
+        <input id="setupName" type="text" placeholder="Ej: Mauricio Cavadias">
+      </div>
+      <div class="field" style="margin-top:12px;">
+        <label for="setupEmail">Correo Electrónico *</label>
+        <input id="setupEmail" type="email" placeholder="admin@katiodesign.com">
+      </div>
+      <div class="field" style="margin-top:12px;">
+        <label for="setupPassword">Contraseña de Administrador *</label>
+        <input id="setupPassword" type="password" placeholder="Mínimo 6 caracteres">
+      </div>
+      <div id="setupErrorMsg" style="color:#d93838; font-size:12px; margin-top:8px; font-weight:600;"></div>
+      <div style="margin-top:20px;">
+        <button class="btn primary" id="setupSubmitBtn" style="width:100%; justify-content:center; padding:11px;">Inicializar Sistema Katio</button>
+      </div>
+    </div>
+
+    <!-- Formulario de Login Estándar -->
+    <div id="loginFormBox">
+      <div class="field">
+        <label for="loginEmail">Correo Electrónico</label>
+        <input id="loginEmail" type="email" placeholder="tu@correo.com">
+      </div>
+      <div class="field" style="margin-top:12px;">
+        <label for="loginPassword">Contraseña</label>
+        <input id="loginPassword" type="password" placeholder="••••••••">
+      </div>
+      <div id="loginErrorMsg" style="color:#d93838; font-size:12px; margin-top:8px; font-weight:600;"></div>
+      <div style="margin-top:20px;">
+        <button class="btn primary" id="loginSubmitBtn" style="width:100%; justify-content:center; padding:11px;">Entrar al Sistema</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: NUEVA CATEGORÍA -->
+<div id="categoryModal" class="modal-overlay" style="display:none;">
+  <div class="modal-box" style="max-width:400px;">
+    <h3>Nueva Categoría</h3>
+    <div class="field">
+      <label for="newCatInput">Nombre de la Categoría *</label>
+      <input id="newCatInput" type="text" placeholder="Ej: Branding & Identidad">
+    </div>
+    <div style="margin-top:20px; display:flex; justify-content:flex-end; gap:10px;">
+      <button class="btn" id="catModalCloseBtn">Cancelar</button>
+      <button class="btn primary" id="catModalSubmitBtn">Guardar Categoría</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: NUEVO SERVICIO CATÁLOGO -->
+<div id="catalogModal" class="modal-overlay" style="display:none;">
+  <div class="modal-box">
+    <h3>Nuevo Servicio para Catálogo</h3>
+    <div class="field">
+      <label for="catModalCategory">Categoría</label>
+      <select id="catModalCategory"></select>
+    </div>
+    <div class="field" style="margin-top:12px;">
+      <label for="catModalName">Nombre del Servicio *</label>
+      <input id="catModalName" type="text" placeholder="Ej: Diseño de Logotipo">
+    </div>
+    <div class="field" style="margin-top:12px;">
+      <label for="catModalDesc">Descripción Corta (opcional)</label>
+      <input id="catModalDesc" type="text" placeholder="Ej: Concepto, paleta y aplicaciones">
+    </div>
+    <div class="field" style="margin-top:12px;">
+      <label for="catModalHours">Horas Estimadas</label>
+      <input id="catModalHours" type="number" min="0" step="0.5" value="2">
+    </div>
+    <div style="margin-top:20px; display:flex; justify-content:flex-end; gap:10px;">
+      <button class="btn" id="catModalCancelBtn">Cancelar</button>
+      <button class="btn primary" id="catModalSaveBtn">Guardar en Base de Datos</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: ÍTEM PERSONALIZADO -->
+<div id="quoteItemModal" class="modal-overlay" style="display:none;">
+  <div class="modal-box">
+    <h3>Añadir Ítem / Servicio Personalizado</h3>
+    <div class="field">
+      <label for="qModalConcept">Concepto o Entregable *</label>
+      <input id="qModalConcept" type="text" placeholder="Ej: Ilustraciones personalizadas">
+    </div>
+    <div class="field" style="margin-top:12px;">
+      <label for="qModalDesc">Descripción Detallada</label>
+      <textarea id="qModalDesc" placeholder="Detalles de entrega, formatos, especificaciones..."></textarea>
+    </div>
+    <div class="fields" style="margin-top:12px; grid-template-columns: 1fr 1fr;">
+      <div class="field">
+        <label for="qModalQty">Cantidad</label>
+        <input id="qModalQty" type="number" min="1" step="1" value="1">
+      </div>
+      <div class="field">
+        <label for="qModalUnitValue">Valor Unitario (COP)</label>
+        <input id="qModalUnitValue" type="number" min="0" step="5000" value="50000">
+      </div>
+    </div>
+    <div style="margin-top:20px; display:flex; justify-content:flex-end; gap:10px;">
+      <button class="btn" id="qModalCancelBtn">Cancelar</button>
+      <button class="btn primary" id="qModalSaveBtn">Agregar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: DESCUENTO PORCENTUAL -->
+<div id="discountModal" class="modal-overlay" style="display:none;">
+  <div class="modal-box">
+    <h3>% Aplicar Descuento Comercial</h3>
+    <div class="field">
+      <label for="discModalConcept">Concepto del Descuento *</label>
+      <input id="discModalConcept" type="text" placeholder="Ej: Descuento especial por pronto pago" value="Descuento comercial">
+    </div>
+    <div class="field" style="margin-top:12px;">
+      <label for="discModalPercent">Porcentaje de Descuento (%) *</label>
+      <input id="discModalPercent" type="number" min="0.1" max="100" step="0.5" value="10">
+    </div>
+    <div style="margin-top:20px; display:flex; justify-content:flex-end; gap:10px;">
+      <button class="btn" id="discModalCancelBtn">Cancelar</button>
+      <button class="btn secondary" id="discModalSaveBtn" style="background:var(--highlight); color:#2d3b0e; font-weight:700;">Aplicar Descuento</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: CREAR USUARIO (ADMIN) -->
+<div id="userModal" class="modal-overlay" style="display:none;">
+  <div class="modal-box">
+    <h3>Crear Nuevo Usuario</h3>
+    <p style="font-size:12px; color:var(--muted); margin:0 0 16px;">Se crearán los accesos y se enviará un correo electrónico con las credenciales si el SMTP está configurado.</p>
+    <div class="field">
+      <label for="newUserName">Nombre Completo *</label>
+      <input id="newUserName" type="text" placeholder="Ej: Carlos Mendoza">
+    </div>
+    <div class="field" style="margin-top:12px;">
+      <label for="newUserEmail">Correo Electrónico *</label>
+      <input id="newUserEmail" type="email" placeholder="carlos@katiodesign.com">
+    </div>
+    <div class="field" style="margin-top:12px;">
+      <label for="newUserPassword">Contraseña Inicial *</label>
+      <input id="newUserPassword" type="text">
+    </div>
+    <div class="field" style="margin-top:12px;">
+      <label for="newUserRole">Rol Asignado</label>
+      <select id="newUserRole">
+        <option value="Usuario Estándar">Usuario Estándar</option>
+        <option value="Admin">Administrador</option>
+      </select>
+    </div>
+    <div id="userModalErrorMsg" style="color:#d93838; font-size:12px; margin-top:8px;"></div>
+    <div style="margin-top:20px; display:flex; justify-content:flex-end; gap:10px;">
+      <button class="btn" id="userModalCancelBtn">Cancelar</button>
+      <button class="btn primary" id="userModalSaveBtn">Crear Usuario & Enviar Accesos</button>
+    </div>
+  </div>
+</div>
+
+<!-- SCRIPTS MODULARES -->
+<script src="js/utils.js"></script>
+<script src="js/pdfRenderer.js"></script>
+<script src="js/storage.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/catalog.js"></script>
+<script src="js/quote.js"></script>
+<script src="js/invoice.js"></script>
+<script src="js/users.js"></script>
+<script src="js/app.js"></script>
+
+</body>
+</html>
