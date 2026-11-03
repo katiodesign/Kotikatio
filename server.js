@@ -524,8 +524,8 @@ app.post('/api/system/reset', requireAdmin, (req, res) => {
   res.json({ success: true, message: 'Todos los datos operativos han sido eliminados. El sistema está 100% limpio.' });
 });
 
-// Enrutamiento SPA
-app.get('*', (req, res) => {
+// Enrutamiento SPA (compatible con Express 5+)
+app.use((req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
